@@ -73,6 +73,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+await ApplyMigrations(app).ConfigureAwait(false);
+
 app.MapControllers();
 
 app.Run();
@@ -97,4 +99,11 @@ static void ConfigureHandlers(IServiceCollection services)
     services.AddScoped<IRequestHandler<GetHumanByIdQuery, GetHumanByIdResponse>, GetHumanByIdHandler>();
 
     #endregion
+}
+
+static async Task ApplyMigrations(WebApplication app)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    using var db = scope.ServiceProvider.GetService<HumanDbContext>();
+    await db.Database.MigrateAsync();
 }
